@@ -148,7 +148,7 @@ void listd(int c){
             system(total.c_str());
         }
     }
-    else if(c==KEY_RIGHT){
+    else if(c==KEY_RIGHT){ //Actually LEFT
         string x=BackdirNames.top();
         FwddirNames.push(x);
         BackdirNames.pop();
@@ -156,7 +156,7 @@ void listd(int c){
         d=opendir(x.c_str());
         y=x;
     }
-    else if(c==KEY_LEFT){
+    else if(c==KEY_LEFT){//Actually RIGHT
         string x=FwddirNames.top();
         FwddirNames.pop();
         BackdirNames.push(x);
@@ -206,6 +206,9 @@ void listd(int c){
         closedir(d);
     }
     
+}
+void Slider(){
+
 }
 int main(int argc, char **argv)
 {
@@ -265,11 +268,15 @@ int main(int argc, char **argv)
             clearsc();
             listd(c);
         }
-        else if(c== KEY_LEFT){
+        else if(c== KEY_LEFT){ //Actually Key right
+        	if(FwddirNames.size()==0)
+        		continue;
             clearsc();
             listd(c);
         }
-        else if(c== KEY_RIGHT){
+        else if(c== KEY_RIGHT){//Actually Key Left
+			if(BackdirNames.size()<=1)
+        		continue;
             clearsc();
             listd(c);
         }
