@@ -22,9 +22,22 @@
 #include <vector>
 #include <ctype.h>
 #include <fstream>
+//#include "soufile.h"
+#include "CommandMode.h"
 using namespace std;
-vector<string> tokens;
+
+// vector<string> tokens;
+// map<string,string> searchRes;
+
 void copyFilesDir(string source,string des,bool flag,int type);
+
+string GetCurrentWorkingDir(void) {
+  char buff[FILENAME_MAX];
+  getcwd( buff, FILENAME_MAX );
+  std::string current_working_dir(buff);
+  return current_working_dir;
+}
+
 string removePunct(string des){
 	string str=des;
 	for (int i = 0, len = str.size(); i < len; i++)
@@ -84,6 +97,7 @@ void makeDir(string source,string des){
 	  DirName = GetCurrentWorkingDir() + "/" + source ;	
     mkdir(DirName.c_str(),0777);
 }
+
 void makeFile(string source,string des){
 	  string fileName;
 	  if(des!="")
@@ -145,45 +159,6 @@ int removedirectoryrecursively(const char *dirname)
 
 void removeFile(const char* des){
 remove(des);
-}
-
-void listdir(const char* dirname){ //For GOTO MODE
-
-}
-
-void searchFileName(const char* dirname,string searchWord){
-    DIR *dir;
-    struct dirent *entry;
-    char path[PATH_MAX];
-
-    if (path == NULL) {
-        fprintf(stderr, "Out of memory error\n");
-        return ;
-    }
-    dir = opendir(dirname);
-    if (dir == NULL) {
-        perror("Error opendir()");
-        return ;
-    }
-    vector<string> res;
-    while ((entry = readdir(dir)) != NULL) {
-    	if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")) {
-	        string currName = entry->d_name;
-	        snprintf(path, (size_t) PATH_MAX, "%s/%s", dirname, entry->d_name);
-	        //printf("%s\n",path);
-	        if(currName==searchWord)
-	        {
-	        	res.push_back(path);
-	        }
-	        if (entry->d_type == DT_DIR) {
-            searchFileName(path,searchWord);
-           }
-	    }
-     }
-     for(int i=0;i<res.size();i++){
-     	cout << res[i] << endl;
-     }
-    closedir(dir);
 }
 
 void snapshot(const char* dirname,string d){
@@ -382,109 +357,113 @@ void copyFilesDir(string source,string des,bool flag,int type){
      }
 }
 
-int main()
-{
-	  string s;
-	  getline (cin, s);
-	  vector<string> arr_temp = split_string(s);
-	  int n=arr_temp.size();
-	  vector<string> arr;
-	  for (int i = 0; i < n; i++) {
-	      string arr_item = arr_temp[i];
+// int main(){
+//       string s;
+//       getline (cin, s);
+//       vector<string> arr_temp = split_string(s);
+//       int n=arr_temp.size();
+//       int outer_flag=1;
+//       vector<string> arr;
+//       for (int i = 0; i < n; i++) {
+//           string arr_item = arr_temp[i];
 
-	      arr.push_back(arr_item);
-	  }
+//           arr.push_back(arr_item);
+//       }
 
-	  if(arr[0]=="create_dir")
-	  {
-	  	string des;
-	  	if(arr[2]==".")
-	  		des="";
-	  	else
-	  	des=arr[2].substr(2);
-	  	makeDir(arr[1],des);
-	  }
-	  else if(arr[0]=="create_file"){
-	  	string des;
-	  	if(arr[2]==".")
-	  		des="";
-	  	else
-	  	des=arr[2].substr(2);
-	    makeFile(arr[1],des);
-	  }
-	  else if(arr[0]=="delete_dir"){
-	  		string des;
-	  		if(arr[1]==".")
-	  			des="";
-	  		else
-	  			des=arr[1].substr(2);
-	  		removedirectoryrecursively(des.c_str());
-	  }
-	  else if(arr[0]=="delete_file"){
-	  		string des;
-	  		if(arr[1]==".")
-	  			des="";
-	  		else
-	  			des=arr[1].substr(2);
-	  		removeFile(des.c_str());
-	  }
-	  else if(arr[0]=="search"){
-	  		string searchString;
-	  		searchString=arr[1];
-	  		searchFileName( GetCurrentWorkingDir().c_str() ,searchString);
-	  }
-	  else if(arr[0]=="goto"){
-	  		string des;
-	  		des=arr[1];
-	  		// if(arr[1][0]=="~".c_str())
-	  		// {
-	  		// 	des=GetCurrentWorkingDir() + "/" + arr[1].substr(2);
-	  		// }
-	  		//goToPath(des);
-	  }
-	  else if(arr[0]=="snapshot"){
-	  	string sourceDir=arr[1];
-	  	string dumpFile;
-	  	dumpFile=arr[2];
-	  	std::ofstream file { dumpFile };
-	  	snapshot(sourceDir.c_str(),dumpFile);
-	  }
-	  else if(arr[0]=="rename"){
-	  	string oldF=arr[1];
-	  	char x = oldF[0];
-	  	if(x=='~'){
-	  		oldF=GetCurrentWorkingDir() + "/" + oldF.substr(2);
-	  	}
-	  	string newF=arr[2];
-	  	char y = newF[0];
-	  	if(y=='~'){
-	  		newF=GetCurrentWorkingDir() + "/" + newF.substr(2);
-	  	}
-	  	renameFile(oldF,newF);
-	  }
-	  else if(arr[0]=="move"){
-	  	int len=arr.size();
-	  	for(int i=1;i<len-1;i++){
-	  		s = arr[i];
-	  		string source=arr[i].substr(2);
-			string des=arr[len-1].substr(2);
-	  		moveFilesDir(source.c_str(),des.c_str());
-	  	}
-	  }
-	  else if(arr[0]=="copy"){
-	  	int len=arr.size();
-	  	for(int i=1;i<arr.size()-1;i++){
-	  		bool flag=true;
-	  		s = arr[i];
-			if (s.find('.') != std::string::npos)
-			    flag=true;//File
-			else
-			    flag=false;//Dir
-			string source=arr[i].substr(2);
-			string des=arr[len-1].substr(2);
-			int type=0;
-	  		copyFilesDir(source,des,flag,type);
-	  	 }
-	  }
-      return 0;
-}
+//       if(arr[0]=="create_dir")
+//       {
+//         string des;
+//         if(arr[2]==".")
+//             des="";
+//         else
+//         des=arr[2].substr(2);
+//         makeDir(arr[1],des);
+//       }
+//       else if(arr[0]=="create_file"){
+//         string des;
+//         if(arr[2]==".")
+//             des="";
+//         else
+//         des=arr[2].substr(2);
+//         makeFile(arr[1],des);
+//       }
+//       else if(arr[0]=="delete_dir"){
+//             string des;
+//             if(arr[1]==".")
+//                 des="";
+//             else
+//                 des=arr[1].substr(2);
+//             removedirectoryrecursively(des.c_str());
+//       }
+//       else if(arr[0]=="delete_file"){
+//             string des;
+//             if(arr[1]==".")
+//                 des="";
+//             else
+//                 des=arr[1].substr(2);
+//             removeFile(des.c_str());
+//       }
+//       else if(arr[0]=="search"){
+//             string searchString;
+//             searchString=arr[1];
+//             searchFileName( GetCurrentWorkingDir().c_str() ,searchString);
+//       }
+//       else if(arr[0]=="goto"){
+//             string des;
+//             des=arr[1];
+//             // if(arr[1][0]=="~".c_str())
+//             // {
+//             //  des=GetCurrentWorkingDir() + "/" + arr[1].substr(2);
+//             // }
+//             //goToPath(des);
+//       }
+//       else if(arr[0]=="snapshot"){
+//         string sourceDir=arr[1];
+//         string dumpFile;
+//         dumpFile=arr[2];
+//         std::ofstream file { dumpFile };
+//         snapshot(sourceDir.c_str(),dumpFile);
+//       }
+//       else if(arr[0]=="rename"){
+//         string oldF=arr[1];
+//         char x = oldF[0];
+//         if(x=='~'){
+//             oldF=GetCurrentWorkingDir() + "/" + oldF.substr(2);
+//         }
+//         string newF=arr[2];
+//         char y = newF[0];
+//         if(y=='~'){
+//             newF=GetCurrentWorkingDir() + "/" + newF.substr(2);
+//         }
+//         renameFile(oldF,newF);
+//       }
+//       else if(arr[0]=="move"){
+//         int len=arr.size();
+//         for(int i=1;i<len-1;i++){
+//             s = arr[i];
+//             string source=arr[i].substr(2);
+//             string des=arr[len-1].substr(2);
+//             moveFilesDir(source.c_str(),des.c_str());
+//         }
+//       }
+//       else if(arr[0]=="copy"){
+//         int len=arr.size();
+//         for(int i=1;i<arr.size()-1;i++){
+//             bool flag=true;
+//             s = arr[i];
+//             if (s.find('.') != std::string::npos)
+//                 flag=true;//File
+//             else
+//                 flag=false;//Dir
+//             string source=arr[i].substr(2);
+//             string des=arr[len-1].substr(2);
+//             int type=0;
+//             copyFilesDir(source,des,flag,type);
+//          }
+//       }
+//       else if(arr[0]=="esc"){
+//       }
+//       else if(arr[0]=="exit"){
+//       }
+//     }
+   
