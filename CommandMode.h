@@ -38,7 +38,6 @@ void removeFile(const char* des);
 void searchFileName(const char* dirname,string searchWord);
 void snapshot(const char* dirname,string d);
 void renameFile(string o,string n);
-void moveFilesDir(const char* source,const char* des);
-void copyDir(const char* dirname,const char* desname);
-void copyFilesDir(string source,string des,bool flag,int type);
+// void copyDir(const char* dirname,const char* desname);
+// void copyFilesDir(string source,string des,bool flag,int type);
 #endif
